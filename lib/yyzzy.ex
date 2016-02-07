@@ -1,14 +1,10 @@
 defmodule Yyzzy do
-  alias Yyzzy.Entity, as: Entity
-  ## Datastructures
-  ### Entities
-    defstruct world: %Entity{}
-  ### Logic
+  defstruct uid: nil, properties: %{}, metadata: %{}, entities: %{}
 
-  ## Module Functions
+  @doc """
+    applies the function to every entity in the tree yyzzy and then
+    rebuilds the structure
+  """
+  def map_into(yyzzy, fun), do: Enum.map(yyzzy, fun) |> Enum.into(yyzzy)
 
-end
-def Yyzzy.Entity do
-  ### Entity
-  defstruct 0, properties: %{}, metadata: %{}
 end
