@@ -75,8 +75,6 @@ defmodule StructTest do
 
     game = Enum.reduce(1..100, game, fn _x, acc -> update.(acc) end)
     assert game.entities[:ball].properties[:owner] in [:p1, :p2, :noone]
-    IO.puts game.entities[:p1].properties.score
-    IO.puts game.entities[:ball].properties[:owner]
     assert game.entities[:p1].properties.score >= 0
 
   end
