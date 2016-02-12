@@ -56,12 +56,12 @@ defmodule StructTest do
 
     # look, a terrible, minimal runtime system lol
     update = fn a = %Yyzzy{entities: %{ball: %Yyzzy{properties: %{owner: o}}}} ->
-              Enum.map(a,fn entity ->
-                case entity.uid do
-                  ^o ->
+              Enum.map(a,fn entity -> #this map is the entire game logic.
+                case entity.uid do #for the entity I am currently updating
+                  ^o -> #if it is the owner of the ball
                     %{entity | properties: #give it a point
                            %{entity.properties |  score: entity.properties.score + 1}}
-                  :ball ->
+                  :ball -> #if it is the ball update its owner
                     p = case :random.uniform * 10 do #flip a coin
                       x when x < 3 -> %{entity.properties | owner: :p1} #30% change p1 might get it
                       x when x < 6 -> %{entity.properties | owner: :p2} #30% change p2 might get it
@@ -70,12 +70,13 @@ defmodule StructTest do
                     %Yyzzy{entity | properties: p}
                   _ -> entity #do nothing
                 end
-              end) |> Enum.into(a) #rebuild the game tree
+              end) |> Enum.into(a) #rebuild the game tree by recursively overriding old children
           end
 
-    game = Enum.reduce(1..100, game, fn _x, acc -> update.(acc) end)
+    game = Enum.reduce(1..100, game, fn _x, acc -> update.(acc) end) #run the game 100 times
     assert game.entities[:ball].properties[:owner] in [:p1, :p2, :noone]
     assert game.entities[:p1].properties.score >= 0
+    # can inspect the player's scores at this point to determine "who won"
 
   end
 

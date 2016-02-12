@@ -21,14 +21,16 @@ defmodule Yyzzy.Property do
   def gen(item) when is_atom(item), do: gen([item])
   def gen(list) when is_list(list), do: gen(%{}, list)
   def gen(map, [h | t]) when is_map(map) do
-    key = h |> Module.split |> List.first |> to_string |> Macro.underscore |> String.to_atom
-    map = Map.merge(map, %{key => Module.safe_concat(Yyzzy.Property,h).new })
+    map = Map.merge(map, %{h => h.new })
     gen(map,t)
   end
   def gen(map, item) when is_atom(item) and is_map(map), do: gen(map, [item])
   def gen(map, []) when is_map(map), do: map
   def merge(map1, map2), do: Map.merge(map1, map2)
-
+  def append(map, prop) do
+    %{__struct__: key} = prop
+    Map.put(map, key, prop)
+  end
   defmacro __using__(_opts) do
     quote do
       @before_compile Yyzzy.Property
@@ -39,4 +41,5 @@ defmodule Yyzzy.Property do
       def new, do: %__MODULE__{}
     end
   end
+
 end
