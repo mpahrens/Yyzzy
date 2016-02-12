@@ -13,29 +13,29 @@ defmodule Yyzzy do
     or leaves the entity alone otherwise and then rebuilds the structure.
     if opts are supplied, then it behaves like map_into
   """
-  def map_over_into(yyzzy, fun, opts) do
-    case opts do
-      [property: property] -> map_over_into(yyzzy, fun, properties: [property])
-      [kind: kind] -> map_over_into(yyzzy, fun, kinds: [kind])
-      [properties: props] ->
-        fun2 = fn y ->
-          keys = props -- Map.keys(y.properties)
-          case keys do
-            [] -> fun.(y)
-            _ -> y
-          end
-        end
-      [kinds: kinds] ->
-        fun2 = fn y ->
+  def map_over_into(yyzzy, fun, property: property), do: map_over_into(yyzzy, fun, properties: [property])
+  def map_over_into(yyzzy, fun, kind: kind), do: map_over_into(yyzzy, fun, kinds: [kind])
+  def map_over_into(yyzzy, fun, properties: props) do
+    f = fn y ->
+      keys = props -- Map.keys(y.properties)
+      case keys do
+        [] -> fun.(y)
+        _ -> y
+      end
+    end
+    map_over_into(yyzzy, f, [])
+  end
+  def map_over_into(yyzzy, fun, kinds: kinds) do
+    f = fn y ->
           if(contains_keys?(kinds,Map.keys(y.properties))) do
             fun.(y)
           else
             y
           end
         end
-      _ -> map_into(yyzzy, fun)
-    end
+    map_over_into(yyzzy,f,[])
   end
+  def map_over_into(yyzzy,fun,[]), do: map_into(yyzzy, fun)
   defp contains_keys?([], _), do: false
   defp contains_keys?(kinds,keys) do
     [kind | tail] = kinds
