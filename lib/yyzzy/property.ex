@@ -41,5 +41,7 @@ defmodule Yyzzy.Property do
       def new, do: %__MODULE__{}
     end
   end
-
+  def update(map, property, key, fun) do
+    %{map | property => %{map[property] | key => (map[property] |> Map.get(key) |> fun.())}}
+  end
 end

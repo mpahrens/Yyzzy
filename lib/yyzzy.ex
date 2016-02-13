@@ -1,6 +1,12 @@
 defmodule Yyzzy do
   defstruct uid: nil, properties: %{}, metadata: %{}, entities: %{}
 
+  ##
+  # Higher Order Functions
+
+  ##
+  # Mapping and restructuring
+
   @doc """
     applies the function to every entity in the tree yyzzy and then
     rebuilds the structure
@@ -51,4 +57,23 @@ defmodule Yyzzy do
     end
   end
 
+  ##
+  # Merging and Reduction
+  @doc """
+  iterate, BFS, over two Yyzzy objects that have the same root uid
+  add the children
+  """
+  def merge(yyzzy1 = %Yyzzy{entities: e1}, yyzzy2 = %Yyzzy{entities: e2}, policy \\ Yyzzy.Policy.overwrite) do
+    case policy.(yyzzy1, yyzzy2) do
+      {:halt, y} -> y
+      y ->
+      entities = Enum.reduce(e2,e1, fn {key,y}, acc ->
+        case Map.get(acc,key) do
+          nil -> Map.put(acc, key, y)
+          x   -> Map.put(acc, key, merge(x,y,policy))
+        end
+      end)
+      %Yyzzy{y | entities: entities}
+    end
+  end
 end
