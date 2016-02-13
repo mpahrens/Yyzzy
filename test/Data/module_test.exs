@@ -31,11 +31,7 @@ defmodule ModuleTest do
     assert server2.entities[:player1].properties[YP.SimpleScore].score == 2000
     assert server2.entities[:player2].properties[YP.SimpleScore].score == 100
     server_merged = Yyzzy.merge(server1, server2, fn y1, y2 ->
-      if y1.metadata[:time] > y2.metadata[:time] do
-        y1
-      else
-        y2
-      end
+      if y1.metadata[:time] > y2.metadata[:time], do: y1, else: y2
     end)
     assert server_merged.entities[:player1].properties[YP.SimpleScore].score == 100
     assert server_merged.entities[:player2].properties[YP.SimpleScore].score == 100

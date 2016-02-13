@@ -9,5 +9,10 @@ defmodule Yyzzy.Policy do
   # Preservers
   def retain(y1, y2), do: y1
   def overwrite(y1, y2), do: y2
+  ##
+  # Metric / Heuristic policies
+  def recent(y1 = %Yyzzy{metadata: %{time: t1}}, y2 = %Yyzzy{metadata: %{time: t2}}) do
+    if t1 > t2, do: y1, else: y2
+  end
 
 end
