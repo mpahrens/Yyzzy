@@ -14,6 +14,7 @@ defmodule Yyzzy.Policy do
   @doc """
   returns the entity with the biggest timestamp
   if either don't have a time then we can't compare and the first is returned
+  Note: this policy does not mutate the metadata time_updated heuristic it reads
   """
   def most_recent(y1 = %Yyzzy{metadata: %{time_updated: t1}},
                   y2 = %Yyzzy{metadata: %{time_updated: t2}}) do
