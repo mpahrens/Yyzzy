@@ -36,4 +36,4 @@ End to End Integration Tests
 - Distributed reference behavior for child entities
   - Either using the struct as a type to pattern match
   - or imitation Monadic structure with a tuple
-- Async options for merging, maping, and updating.
+- Async options for merging, mapping, and updating.

@@ -3,7 +3,6 @@ Thanks for looking at Yyzzy as your server side entity system. If you are lookin
 (1) a rich test suite showing the different features of Yyzzy and how they are used.  
 (2) comprehensive examples that look like familiar games, simplified and with or without a rich user interface (may be text/terminal instead of GUI/controller)
 # Functional Correctness Examples
-
 Please look in "test/\*" for snippets of the expected usage of each feature of _Yyzzy_.  
 This test library is structured so that you can mix and match feature usage at any level of abstraction:
 - Data
@@ -41,3 +40,8 @@ Complete games are currently under construction and won't be available until pre
   - n player
   - A game around musical collaboration and discovery
   - multiple views
+- Chip/Pi Virtual Pet
+  - n players
+  - n autonomous pets on embedded hardware
+  - Distribute game server across a distributed, peer-to-peer network
+  - Multiple Views and IO
