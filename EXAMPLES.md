@@ -7,9 +7,10 @@ Please look in "test/\*" for snippets of the expected usage of each feature of _
 This test library is structured so that you can mix and match feature usage at any level of abstraction:
 - Data
   - lowest level of abstraction
-- Library
   - module + struct based
-  - no otp or server dependence
+- Standard Library
+  - no particular runtime dependencies
+  - Assumes entities are operated on using the Yyzzy, Yyzzy.Entity, and Yyzzy.Properties module functions. 
 - Runtime System (RTS)
   - Otp or server protocol dependant
 - DSL
