@@ -63,4 +63,33 @@ defmodule ModuleTest do
     assert gun2.uid == {{:game, :player2}, :gun}
     assert Yz.serialize_uid(gun2, delimiter: ":") == "game:player2:gun"
   end
+
+  test "find" do
+    alias Yyzzy, as: Yz
+    player_template = Yz.put(%Yz{uid: :player}, :gun, %Yz{uid: :gun, properties: %{bullets: 10}})
+    game = Yz.put(%Yz{uid: :game}, :player1, player_template)
+        |> Yz.put(:player2, player_template)
+    assert Yz.find(game,{{:game, :player2}, :gun}).properties[:bullets] == 10
+
+  end
+
+  test "find and update - in mem" do
+    alias Yyzzy, as: Yz
+    player_template = Yz.put(%Yz{uid: :player}, :gun, %Yz{uid: :gun, properties: %{bullets: 10}})
+    game = Yz.put(%Yz{uid: :game}, :player1, player_template)
+        |> Yz.put(:player2, player_template)
+        |> Yz.find_and_update({{:game, :player2}, :gun},
+              fn x -> %{x | properties: %{bullets: 100}} end)
+    assert Yz.find(game,{{:game, :player2}, :gun}).properties[:bullets] == 100
+  end
+
+  test "find and update - genserver" do
+    alias Yyzzy, as: Yz
+    player_template = Yz.put(%Yz{uid: :player}, :gun, %Yz{uid: :gun, properties: %{bullets: 10}})
+    game = Yz.put(%Yz{uid: :game}, :player1, player_template)
+        |> Yz.put(:player2, player_template, :genserver)
+        |> Yz.find_and_update({{:game, :player2}, :gun},
+              fn x -> %{x | properties: %{bullets: 100}} end)
+    assert Yz.find(game,{{:game, :player2}, :gun}).properties[:bullets] == 100
+  end
 end

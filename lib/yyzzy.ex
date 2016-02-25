@@ -131,7 +131,7 @@ defmodule Yyzzy do
       _ -> update(yz, key, fn x ->
         y = %Yyzzy{x | uid: {uid, key}}
         Enum.reduce(Map.keys(y.entities),y, fn key, y_acc ->
-          _clean_child_uid(y, key)
+          _clean_child_uid(y_acc, key)
         end)
       end)
     end
@@ -174,11 +174,19 @@ defmodule Yyzzy do
       f when is_function(f) ->
         f.({:update,upfn})
         yz
-      nil -> :undefined
+      nil -> yz
       e -> _put(yz, key, upfn.(e))
     end
   end
   @timeout 30_000 #30 seconds
+  @doc """
+  takes a yz, a key of the child entity to update,
+  an upfn that maps a Yyzzy -> Yyzzy and a default value
+  incase the yz does not contain that child key.
+  returns the tuple {updated_yz,updated_child}
+  where the updated_yz respected any lambda abstractions
+  but the child is a Yyzzy data structure at the time of update.
+  """
   def get_and_update(yz, key, upfn, default \\ %Yyzzy{}) do
     up_fn_send = fn x ->
       upfn.(x)
@@ -230,6 +238,47 @@ defmodule Yyzzy do
     %Yyzzy{yz | entities: Map.delete(yz.entities, key)}
   end
   @doc """
+    Given a root Yyzzy and the heirarchical form of a uid,
+    traverse the tree and return that node
+  """
+  def find(yz,key), do: find(yz,key,%Yyzzy{})
+  def find(yz = %Yyzzy{uid: uid}, key, _default) when uid == key, do: yz
+  def find(yz, key, default) do
+    keylist = _ser_uid(key,:list)
+    _find(yz, keylist, default)
+  end
+  defp _find(_,  []   , default), do: default
+  defp _find(yz, [key], default), do: get(yz,key,default)
+  defp _find(yz, [head | tail], default) do
+    case (yz.uid) do
+      ^head -> _find(yz,tail,default)
+      {_, ^head} -> _find(yz,tail,default)
+      _     -> _find(get(yz,head,yz),tail,default)
+
+    end
+  end
+  @doc """
+  Given a yz, a key in heirarchical form, and a function that maps an Yyzzy -> Yyzzy
+  searchs over the yz, and recursively applies updates to matching children
+  and returns the original yz modified.
+  """
+  def find_and_update(yz, key, upfn) do
+    keylist = _ser_uid(key, :list)
+    _find_and_update(yz,keylist,upfn)
+  end
+  def _find_and_update(yz,[],_), do: yz
+  def _find_and_update({_parents,myid},list,upfn),
+    do: _find_and_update(myid,list,upfn)
+  def _find_and_update(yz,[key],upfn), do: update(yz,key,upfn)
+  def _find_and_update(yz, [head | tail], upfn) do
+    case (yz.uid) do
+      ^head -> _find_and_update(yz, tail, upfn)
+      _     -> update(yz, head, fn x ->
+                 _find_and_update(x,tail,upfn)
+               end)
+    end
+  end
+  @doc """
   Pops the head off of the yyzzy tree (root node) and promotes the
   child mapped to by key to root, if it exists. returns yz otherwise.
   Does not alter uids.
@@ -247,8 +296,8 @@ defmodule Yyzzy do
     uid being the head.
   """
   def serialize_uid(%Yyzzy{uid: uid}, [delimiter: dem] \\ [delimiter: ";"]), do: _ser_uid(uid, dem)
-  defp _ser_uid({parent, child}, :list), do: [_ser_uid(parent, :list)| [child]]
+  defp _ser_uid({parent, child}, :list), do: _ser_uid(parent, :list) ++ [child]
   defp _ser_uid({parent,child}, dem), do: _ser_uid(parent,dem) <> dem <> to_string(child)
-  defp _ser_uid(root, :list), do: root
+  defp _ser_uid(root, :list), do: [root]
   defp _ser_uid(root, _dem), do: to_string(root)
 end

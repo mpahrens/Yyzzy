@@ -3,7 +3,7 @@ defmodule Yyzzy.Mixfile do
 
   def project do
     [app: :yyzzy,
-     version: "0.0.1-dev",
+     version: "0.0.1",
      name: "Yyzzy",
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
