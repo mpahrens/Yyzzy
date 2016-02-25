@@ -7,8 +7,8 @@ defmodule Yyzzy.Policy do
   """
   ##
   # Preservers
-  def retain(y1, y2), do: y1
-  def overwrite(y1, y2), do: y2
+  def retain(y1, _y2), do: y1
+  def overwrite(_y1, y2), do: y2
   ##
   # Metric / Heuristic policies
   @doc """
@@ -20,7 +20,7 @@ defmodule Yyzzy.Policy do
                   y2 = %Yyzzy{metadata: %{time_updated: t2}}) do
     if t1 > t2, do: y1, else: y2
   end
-  def most_recent(y1, y2), do: y1
+  def most_recent(y1, _y2), do: y1
   @doc """
   returns the entity with the biggest timestamp and shadows over its children
   """

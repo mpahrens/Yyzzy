@@ -37,4 +37,20 @@ defmodule ModuleTest do
     assert server_merged.entities[:player2].properties[YP.SimpleScore].score == 100
   end
 
+  test "map over into holds over lambda children" do
+    alias Yyzzy, as: Yz
+    alias Yyzzy.Property, as: YP
+    props = YP.gen(YP.SimpleScore)
+    low_score = YP.update(props, YP.SimpleScore, :score, fn _ -> 100 end)
+    player = %Yz{uid: :player, properties: low_score}
+    game = %Yz{uid: :game}
+            |> Yz.put(:player, player, :genserver)
+    game = game
+            |> Yz.map_over_into(fn x ->
+                new_score = YP.update(x.properties, YP.SimpleScore, :score, fn _ -> 1_000 end)
+                %Yz{x | properties: new_score}
+              end, property: YP.SimpleScore)
+    player_copy = Yz.get(game, :player)
+    assert player_copy.properties[YP.SimpleScore].score == 1_000
+  end
 end

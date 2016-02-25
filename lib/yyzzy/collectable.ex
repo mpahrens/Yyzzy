@@ -4,11 +4,12 @@ defmodule Yyzzy.Collectable do
     def into(original) do
       {original, fn
         group, {:cont, yyzzy} ->
-          uid = yyzzy.uid
-          case group.uid do
+          uid = group.uid
+          case yyzzy.uid do
             ^uid -> yyzzy
+            {^uid, u} -> Yyzzy.put(group, u, yyzzy)
             _ ->
-              %Yyzzy{group | entities: Map.put(group.entities, uid, yyzzy)}
+              Yyzzy.put(group, uid, yyzzy)
             end
         group, :done -> group
         _, :halt -> :ok

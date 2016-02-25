@@ -33,6 +33,15 @@ Complete games are currently under construction and won't be available until pre
   - simple AI decision tree entities
 - Simple RPG
   - 1 player
+- Visual Novel / CYOA / Rot3K-like / Fire Emblem-like
+  - 1 player
+  - Inspired by the work of (Christine Love)[https://twitter.com/christinelove]
+    - ebb / flow based events (rhythmic?) rather than explicit time or stat
+    - heavy in metavariables and unobtrusive, persistent state
+  - Inspired by the (comparative assessment of Emily Short)[https://emshort.wordpress.com/2016/02/15/set-check-or-gate-a-problem-in-personality-stats/]
+    - opposed stats (parametric) and morality / trait systems (ad hoc)
+    - interop. between character stat "model", user (inter)action "controller" and visual cue and information "view"
+  - Going to be a real trial since many VN authors want to work in a high level DSL space, but escape to a more powerful language in complicated edge cases.
 - Simple (MMO)RPG / MUD
   - n player
   - a permutation of simple rpg to show how minimally you can add distributed logic to a Yyzzy game
