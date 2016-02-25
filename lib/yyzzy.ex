@@ -90,10 +90,11 @@ defmodule Yyzzy do
     type    - :lambda by default, but can be a custom type if
               you are specifying your own put, get, and get_and_update
   """
-  def make_lambda(getfn, upfn, type \\ :lambda) do
+  def make_lambda(getfn, upfn, deletefn, type \\ :lambda) do
     fn :get                  -> getfn.()
        :info                 -> type
-       {:update, f} when is_function(f) -> upfn.(f)
+       {:update, f}          -> upfn.(f)
+       :delete               -> deletefn.()
      end
   end
   @doc """
@@ -102,6 +103,9 @@ defmodule Yyzzy do
     opts:
       force: true | false -> if force -> always puts new child entity in
                                          overwriting any prexisting one.
+
+    Put takes linear time in the length of the child tree because it
+    reassigns the uid to match the new tree structure.
   """
   def put(yz, key, child, type \\ :struct, opts \\ [force: false]) do
     if get_info(yz, key) in [:undefined, :struct] or opts[:force]
@@ -124,7 +128,12 @@ defmodule Yyzzy do
     uid = yz.uid
     case get(yz, key).uid do
       {^uid, ^key} -> yz
-      _ -> update(yz, key, fn x -> %Yyzzy{x | uid: {uid, key}} end)
+      _ -> update(yz, key, fn x ->
+        y = %Yyzzy{x | uid: {uid, key}}
+        Enum.reduce(Map.keys(y.entities),y, fn key, y_acc ->
+          _clean_child_uid(y, key)
+        end)
+      end)
     end
   end
   def _put_genserver(yz, key, child) do
@@ -132,7 +141,8 @@ defmodule Yyzzy do
     {:ok, pid} = GenServer.start_link(Yyzzy.Entity.GenServer, child)
     getfn = fn -> GenServer.call(pid, :get) end
     upfn  = fn f -> GenServer.cast(pid, {:update, f}) end
-    lambda = make_lambda(getfn, upfn, {:genserver, pid})
+    deletefn =  fn -> GenServer.stop(pid, :shutdown) end
+    lambda = make_lambda(getfn, upfn, deletefn, {:genserver, pid})
     _put(yz, key, lambda)
   end
   @doc """
@@ -207,14 +217,38 @@ defmodule Yyzzy do
     end
     %Yyzzy{yz | entities: entities}
   end
-
+  @doc """
+  Returns the root entity, yz, after removing key from its children,
+  calling the necessary delete function for that child if applicable.
+  """
+  def delete(yz, key) do
+    case yz.entities[key] do
+      f when is_function(f) ->
+        f.(:delete)
+      _ -> :ok
+    end
+    %Yyzzy{yz | entities: Map.delete(yz.entities, key)}
+  end
   @doc """
   Pops the head off of the yyzzy tree (root node) and promotes the
-  child mapped to by key to root, if it exists. returns yz otherwise
+  child mapped to by key to root, if it exists. returns yz otherwise.
+  Does not alter uids.
   """
   def retree(yz, key) do
     new_root = Yyzzy.get(yz, key, yz)
     entities = Map.delete(yz.entities, key)
     %Yyzzy{new_root | entities: Map.merge(new_root.entities, entities)}
   end
+  @doc """
+    Given a Yyzzy entity, will pretty print the nested uid format either as a string
+    with the given opt: delimiter: "<delimiter>" where <delimiter> could be something
+    like ";" or "." or ":"
+    or opt: delimiter: :list, where it will make a list of the uids with the root
+    uid being the head.
+  """
+  def serialize_uid(%Yyzzy{uid: uid}, [delimiter: dem] \\ [delimiter: ";"]), do: _ser_uid(uid, dem)
+  defp _ser_uid({parent, child}, :list), do: [_ser_uid(parent, :list)| [child]]
+  defp _ser_uid({parent,child}, dem), do: _ser_uid(parent,dem) <> dem <> to_string(child)
+  defp _ser_uid(root, :list), do: root
+  defp _ser_uid(root, _dem), do: to_string(root)
 end

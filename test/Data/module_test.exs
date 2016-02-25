@@ -53,4 +53,14 @@ defmodule ModuleTest do
     player_copy = Yz.get(game, :player)
     assert player_copy.properties[YP.SimpleScore].score == 1_000
   end
+
+  test "uid heirarchy holds over putting templates" do
+    alias Yyzzy, as: Yz
+    player_template = Yz.put(%Yz{uid: :player}, :gun, %Yz{uid: :gun})
+    game = Yz.put(%Yz{uid: :game}, :player1, player_template)
+        |> Yz.put(:player2, player_template)
+    gun2 = game.entities[:player2].entities[:gun]
+    assert gun2.uid == {{:game, :player2}, :gun}
+    assert Yz.serialize_uid(gun2, delimiter: ":") == "game:player2:gun"
+  end
 end
